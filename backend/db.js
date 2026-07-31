@@ -11,7 +11,6 @@ const connectDB = async () => {
   } catch (error) {
     console.error(`MongoDB Connection Error: ${error.message}`);
     // If connection fails, log it and don't exit, in case we want to fallback to local or mocked databases
-    process.exit(1);
   }
 };
 
