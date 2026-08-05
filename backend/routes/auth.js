@@ -15,7 +15,6 @@ const authLimiter = rateLimit({
 });
 
 router.use(authLimiter);
-const JWT_SECRET = process.env.JWT_SECRET;
 
 // Helper
 export const getUserFromHeader = (req) => {
