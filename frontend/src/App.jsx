@@ -3,7 +3,7 @@ import axios from 'axios';
 import { 
   Search, MessageSquare, ShieldAlert, Award, FileText, CheckSquare,
   MapPin, User, FileCheck, Phone, ExternalLink, HelpCircle, ArrowLeft,
-  TrendingUp, Check, Users, Sparkles, BookOpen, AlertTriangle, Settings, LogOut, Volume2, Globe, Mic
+  TrendingUp, Check, Users, Sparkles, BookOpen, AlertTriangle, Settings, LogOut, Volume2, Globe, Mic, Briefcase
 } from 'lucide-react';
 import { INDIAN_STATES, OCCUPATIONS, CASTE_CATEGORIES, LANGUAGES } from './utils/constants.js';
 import EligibilityScreener from './components/EligibilityScreener.jsx';
