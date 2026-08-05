@@ -9,6 +9,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -16,27 +18,25 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
+app.use(helmet());
+app.use(cors({ origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://127.0.0.1:5173'] }));
 app.use(express.json());
 
 // Connect Database
 connectDB();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'nagarik_saathi_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined in environment variables.");
+  process.exit(1);
+}
 
-// Optional token extraction helper
-const getUserFromHeader = (req) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
-    try {
-      return jwt.verify(token, JWT_SECRET);
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
-};
+import authRoutes, { requireAuth, getUserFromHeader } from './routes/auth.js';
+import schemeRoutes from './routes/schemes.js';
+
+// Setup Routes
+app.use('/api/auth', authRoutes);
+app.use('/api', schemeRoutes);
 
 // Initialize Gemini LLM
 let model = null;
@@ -59,17 +59,13 @@ if (apiKey) {
 // Helper to clean and parse Gemini JSON response
 const parseGeminiResponse = (text) => {
   let cleaned = text.trim();
-  // Strip markdown code block wrappers if present
-  if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.substring(7);
-  } else if (cleaned.startsWith('```')) {
-    cleaned = cleaned.substring(3);
-  }
-  if (cleaned.endsWith('```')) {
-    cleaned = cleaned.substring(0, cleaned.length - 3);
-  }
-  cleaned = cleaned.trim();
   try {
+    // Robust extraction: find first { and last }
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    }
     return JSON.parse(cleaned);
   } catch (e) {
     console.error("Failed to parse Gemini response as JSON. Raw response:", text);
@@ -149,7 +145,7 @@ const getMockResponse = (message, schemes) => {
 // -------------------------------------------------------------
 
 // API Key configuration endpoint
-app.post('/api/settings/apikey', (req, res) => {
+app.post('/api/settings/apikey', requireAuth, (req, res) => {
   const { apiKey } = req.body;
   if (!apiKey) {
     return res.status(400).json({ error: "API Key is required." });
@@ -167,137 +163,31 @@ app.post('/api/settings/apikey', (req, res) => {
   }
 });
 
-// Authentication Routes
-app.post('/api/auth/register', async (req, res) => {
-  const { username, password, age, occupation, state, gender, maritalStatus } = req.body;
+// Auth routes have been moved to routes/auth.js
 
-  if (!username || !password || !age || !occupation || !state || !gender || !maritalStatus) {
-    return res.status(400).json({ error: "All registration fields are required." });
+// Cosine similarity helper
+const cosineSimilarity = (vecA, vecB) => {
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
   }
+  if (normA === 0 || normB === 0) return 0;
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+};
 
-  try {
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ error: "Username already exists." });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({
-      username,
-      password: hashedPassword,
-      profile: {
-        age: Number(age),
-        occupation,
-        state,
-        gender,
-        maritalStatus
-      }
-    });
-
-    await newUser.save();
-    
-    const token = jwt.sign({ userId: newUser._id, username: newUser.username }, JWT_SECRET, { expiresIn: '24h' });
-
-    res.status(201).json({
-      message: "User registered successfully",
-      token,
-      user: {
-        username: newUser.username,
-        profile: newUser.profile
-      }
-    });
-  } catch (error) {
-    console.error("Register Error:", error);
-    res.status(500).json({ error: "Failed to register user." });
-  }
-});
-
-app.post('/api/auth/login', async (req, res) => {
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    return res.status(400).json({ error: "Username and password are required." });
-  }
-
-  try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(400).json({ error: "Invalid username or password." });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ error: "Invalid username or password." });
-    }
-
-    const token = jwt.sign({ userId: user._id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
-
-    res.json({
-      message: "Logged in successfully",
-      token,
-      user: {
-        username: user.username,
-        profile: user.profile
-      }
-    });
-  } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ error: "Failed to log in." });
-  }
-});
-
-app.post('/api/auth/guest', async (req, res) => {
-  try {
-    let guestUser = await User.findOne({ username: 'guest_operator' });
-    if (!guestUser) {
-      const hashedPassword = await bcrypt.hash('guest123', 10);
-      guestUser = new User({
-        username: 'guest_operator',
-        password: hashedPassword,
-        profile: {
-          age: 28,
-          occupation: 'Farmer',
-          state: 'Madhya Pradesh',
-          gender: 'Male',
-          maritalStatus: 'Married'
-        }
-      });
-      await guestUser.save();
-    }
-    const token = jwt.sign({ userId: guestUser._id, username: guestUser.username }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({
-      message: "Logged in as guest",
-      token,
-      user: {
-        username: guestUser.username,
-        profile: guestUser.profile
-      }
-    });
-  } catch (error) {
-    console.error("Guest login error:", error);
-    res.status(500).json({ error: "Failed to authenticate as guest." });
-  }
-});
-
-// Endpoint to fetch current user profile
-app.get('/api/auth/me', async (req, res) => {
-  const user = getUserFromHeader(req);
-  if (!user) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-  try {
-    const dbUser = await User.findById(user.userId).select('-password');
-    if (!dbUser) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    res.json(dbUser);
-  } catch (e) {
-    res.status(500).json({ error: "Server error" });
-  }
+// Rate limiter for chat to prevent abuse
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // limit each IP to 20 requests per windowMs
+  message: { error: "Too many chat requests, please try again later." }
 });
 
 // 1. POST /api/chat
-app.post('/api/chat', async (appReq, appRes) => {
+app.post('/api/chat', chatLimiter, async (appReq, appRes) => {
   const { message, sessionId, sessionType } = appReq.body;
 
   if (!message || !sessionId) {
@@ -338,14 +228,39 @@ app.post('/api/chat', async (appReq, appRes) => {
 
     if (!isMockMode) {
       try {
+        let topSchemes = schemes;
+        if (apiKey) {
+          try {
+            const { GoogleGenerativeAIEmbeddings } = await import("@langchain/google-genai");
+            const embeddings = new GoogleGenerativeAIEmbeddings({
+              modelName: "text-embedding-004",
+              apiKey: apiKey
+            });
+            const queryToEmbed = userProfileText ? `${message} (Profile: ${userProfileText})` : message;
+            const queryVector = await embeddings.embedQuery(queryToEmbed);
+            const scoredSchemes = schemes.map(scheme => {
+              let score = 0;
+              if (scheme.embedding && scheme.embedding.length > 0) {
+                score = cosineSimilarity(queryVector, scheme.embedding);
+              }
+              return { ...scheme.toObject(), score };
+            });
+            scoredSchemes.sort((a, b) => b.score - a.score);
+            topSchemes = scoredSchemes.slice(0, 5);
+            console.log(`RAG Retrieval: Top match score ${topSchemes[0]?.score || 0}`);
+          } catch (embedError) {
+            console.error("Embedding generation failed, falling back to full context:", embedError.message);
+          }
+        }
+
         const systemPrompt = `You are "NagarikSaathi", an AI-powered government scheme discovery assistant for rural India.
 You are helping a CSC/VLE (Common Service Centre / Village Level Entrepreneur) operator who is assisting a rural citizen.
 The operator is typing on behalf of the citizen. The citizen is sitting beside the operator.
 
 Your job is to match the citizen's query with the available government schemes.
-Below is the list of ALL 35 available government schemes:
+Below is the list of top relevant government schemes retrieved for this query:
 
-${JSON.stringify(schemes, null, 2)}
+${JSON.stringify(topSchemes.map(s => ({ schemeId: s.schemeId, name: s.name, description: s.description, eligibility: s.eligibility })), null, 2)}
 
 ${userProfileText ? `RECOMMENDED PROFILE: ${userProfileText}\nFocus matches specifically on schemes applicable to their state and occupation, and evaluate eligibility metrics directly.` : ''}
 
@@ -461,101 +376,46 @@ app.get('/api/chat/:sessionId', async (appReq, appRes) => {
   }
 });
 
-// 3. POST /api/eligibility
-app.post('/api/eligibility', async (appReq, appRes) => {
-  const { sessionId, state, occupation, gender, maritalStatus, landAcres, annualIncome } = appReq.body;
-
+// 5. GET /api/stats (Global Stats for Operator Dashboard)
+app.get('/api/stats', async (appReq, appRes) => {
   try {
-    // Save profile for tracking
-    const profile = new EligibilityProfile({
-      sessionId: sessionId || `eligibility-${Date.now()}`,
-      state,
-      occupation,
-      gender,
-      maritalStatus,
-      landAcres: Number(landAcres) || 0,
-      annualIncome: Number(annualIncome) || 0
-    });
-    await profile.save();
-
-    // Query filter
-    // Schemes match:
-    // - state must match one of eligibility.states or states array contains 'All' or is empty
-    // - occupation must match one of eligibility.occupation or occupation array is empty or contains 'All'
-    // - gender must match eligibility.gender or eligibility.gender is 'All'
-    // - maritalStatus must match one of eligibility.maritalStatus or maritalStatus array is empty or contains 'All'
-    // - landAcres must be >= minLandAcres and <= maxLandAcres
-    // - annualIncome must be <= maxAnnualIncome
+    // Calculate real stats from ChatSessions
+    const totalSessions = await ChatSession.countDocuments();
     
-    const landVal = Number(landAcres) || 0;
-    const incomeVal = Number(annualIncome) || 9999999;
-
-    const query = {
-      $and: [
-        {
-          $or: [
-            { 'eligibility.states': { $size: 0 } },
-            { 'eligibility.states': 'All' },
-            { 'eligibility.states': state }
-          ]
-        },
-        {
-          $or: [
-            { 'eligibility.occupation': { $size: 0 } },
-            { 'eligibility.occupation': 'All' },
-            { 'eligibility.occupation': occupation }
-          ]
-        },
-        {
-          $or: [
-            { 'eligibility.gender': 'All' },
-            { 'eligibility.gender': gender }
-          ]
-        },
-        {
-          $or: [
-            { 'eligibility.maritalStatus': { $size: 0 } },
-            { 'eligibility.maritalStatus': 'All' },
-            { 'eligibility.maritalStatus': maritalStatus }
-          ]
-        },
-        { 'eligibility.minLandAcres': { $lte: landVal } },
-        { 'eligibility.maxLandAcres': { $gte: landVal } },
-        { 'eligibility.maxAnnualIncome': { $gte: incomeVal } }
-      ]
-    };
-
-    const matches = await Scheme.find(query);
-
-    // Sort: State-specific schemes first, then national schemes
-    const sortedMatches = matches.sort((a, b) => {
-      const aIsStateSpecific = a.eligibility.states.length > 0 && !a.eligibility.states.includes('All');
-      const bIsStateSpecific = b.eligibility.states.length > 0 && !b.eligibility.states.includes('All');
-      if (aIsStateSpecific && !bIsStateSpecific) return -1;
-      if (!aIsStateSpecific && bIsStateSpecific) return 1;
-      return 0;
+    // Get recent activity
+    const recentSessions = await ChatSession.find({})
+      .sort({ _id: -1 })
+      .limit(3);
+      
+    const recentActivity = recentSessions.map(session => {
+      return {
+        citizen: session.sessionType === 'self' ? 'Self/Citizen' : 'Assisted User',
+        state: 'N/A', // Usually derived from EligibilityProfile
+        scheme: 'Scheme Query', // Based on recent queries
+        time: 'recently',
+        status: 'Session Logged'
+      };
     });
 
-    appRes.json(sortedMatches);
+    const categoriesMatched = [
+      { cat: "Agriculture & Farming", percent: "42%" },
+      { cat: "Women & Child Care", percent: "28%" },
+      { cat: "Pension & Security", percent: "18%" },
+      { cat: "Rural Employment", percent: "12%" }
+    ];
+
+    appRes.json({
+      citizensHelped: totalSessions || 0,
+      avgResponseTimeMs: 4.2, // Stub for now, can be calculated dynamically
+      recentActivity: recentActivity || [],
+      categoriesMatched
+    });
   } catch (error) {
-    console.error("Error in /api/eligibility:", error);
-    appRes.status(500).json({ error: "Failed to query eligibility." });
+    appRes.status(500).json({ error: "Failed to fetch stats." });
   }
 });
 
-// 4. GET /api/schemes/:schemeId
-app.get('/api/schemes/:schemeId', async (appReq, appRes) => {
-  const { schemeId } = appReq.params;
-  try {
-    const scheme = await Scheme.findOne({ schemeId });
-    if (!scheme) {
-      return appRes.status(404).json({ error: "Scheme not found." });
-    }
-    appRes.json(scheme);
-  } catch (error) {
-    appRes.status(500).json({ error: "Failed to retrieve scheme." });
-  }
-});
+// Scheme and Eligibility routes have been moved to routes/schemes.js
 
 // 5. GET /api/session/:sessionId/stats
 app.get('/api/session/:sessionId/stats', async (appReq, appRes) => {
@@ -592,33 +452,18 @@ app.get('/api/session/:sessionId/stats', async (appReq, appRes) => {
     // Default to a realistic 4.2 seconds if no session stats exist yet, or round the actual average
     const avgResponseTimeSec = responseCount > 0 
       ? Math.round(totalResponseTime / responseCount / 100) / 10
-      : 4.2;
+      : 0;
 
     appRes.json({
-      citizensHelped: citizensHelped || 3, // fallback default to make demo look active
-      avgResponseTimeMs: avgResponseTimeSec
+      citizensHelped: citizensHelped || 0,
+      avgResponseTimeMs: avgResponseTimeSec.toFixed(1)
     });
   } catch (error) {
-    console.error("Error in /api/session/stats:", error);
-    appRes.json({ citizensHelped: 3, avgResponseTimeMs: 4.2 }); // fallback
+    appRes.json({ citizensHelped: 0, avgResponseTimeMs: 0 }); // safe fallback
   }
 });
 
-// Flag/report scheme endpoint
-app.post('/api/schemes/:schemeId/report', async (req, res) => {
-  const { schemeId } = req.params;
-  try {
-    const scheme = await Scheme.findOne({ schemeId });
-    if (!scheme) {
-      return res.status(404).json({ error: "Scheme not found." });
-    }
-    console.log(`[FLAGGED SCHEME]: Scheme "${schemeId}" marked as outdated by operator.`);
-    res.json({ message: "Scheme reported successfully. Our team will verify it within 24 hours." });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to report scheme." });
-  }
-});
+// Report scheme route has been moved to routes/schemes.js
 
 // Serve static frontend files from Vite build
 const frontendDist = path.join(__dirname, '../frontend/dist');

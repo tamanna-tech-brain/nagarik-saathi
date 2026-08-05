@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import connectDB from './db.js';
 import { Scheme } from './models.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const schemesData = [
   {
@@ -912,6 +914,58 @@ const schemesData = [
     ministry: "Ministry of Rural Development",
     lastVerified: new Date("2026-06-30"),
     sourceUrl: "https://nsap.nic.in/"
+  },
+  {
+    schemeId: "lakhpati-didi",
+    name: "Lakhpati Didi Yojana",
+    nameHindi: "लखपति दीदी योजना",
+    category: ["Women Empowerment", "Financial Support"],
+    targetGroups: ["Women in SHGs", "Rural Women"],
+    eligibility: {
+      occupation: ["All"],
+      gender: "Female",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["All"],
+      maxAnnualIncome: 100000
+    },
+    benefits: "Skill training and financial linkages to Women Self-Help Groups (SHGs) to help them earn an annual income of ₹1,00,000 or more.",
+    benefitsHindi: "महिला स्वयं सहायता समूहों (SHGs) को कौशल प्रशिक्षण और वित्तीय संपर्क ताकि उन्हें ₹1,00,000 या अधिक की वार्षिक आय अर्जित करने में मदद मिल सके।",
+    documents: ["Aadhaar Card", "SHG Membership Proof", "Bank Account Details", "Income Certificate"],
+    applicationUrl: "https://nrlm.gov.in/",
+    helplineNumber: "011-23382747",
+    description: "An initiative under the Deendayal Antyodaya Yojana-National Rural Livelihoods Mission (DAY-NRLM) to encourage women to start micro-enterprises and achieve financial independence.",
+    descriptionHindi: "दीनदयाल अंत्योदय योजना-राष्ट्रीय ग्रामीण आजीविका मिशन (DAY-NRLM) के तहत महिलाओं को सूक्ष्म उद्यम शुरू करने और वित्तीय स्वतंत्रता प्राप्त करने के लिए प्रोत्साहित करने की एक पहल।",
+    ministry: "Ministry of Rural Development",
+    lastVerified: new Date("2026-07-28"),
+    sourceUrl: "https://lakhpatididi.gov.in/"
+  },
+  {
+    schemeId: "sukanya-samriddhi",
+    name: "Sukanya Samriddhi Yojana (SSY)",
+    nameHindi: "सुकन्या समृद्धि योजना",
+    category: ["Savings", "Child Welfare"],
+    targetGroups: ["Girl Child", "Parents of Girls"],
+    eligibility: {
+      occupation: ["All"],
+      gender: "Female", // the account is for the girl child
+      maritalStatus: ["Single"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["All"],
+      maxAnnualIncome: 9999999
+    },
+    benefits: "High-interest savings account for girl children, providing tax benefits under Section 80C and financial security for their education and marriage.",
+    benefitsHindi: "बालिकाओं के लिए उच्च-ब्याज बचत खाता, जो धारा 80C के तहत कर लाभ और उनकी शिक्षा और विवाह के लिए वित्तीय सुरक्षा प्रदान करता है।",
+    documents: ["Birth Certificate of Girl Child", "Aadhaar Card of Parent/Guardian", "Address Proof of Parent/Guardian"],
+    applicationUrl: "https://www.indiapost.gov.in/",
+    helplineNumber: "1800-266-6868",
+    description: "A government-backed savings scheme targeted at the parents of girl children, encouraging them to build a fund for the future education and marriage expenses of their female child.",
+    descriptionHindi: "बालिकाओं के माता-पिता के लक्षित एक सरकारी समर्थित बचत योजना, जो उन्हें अपनी बच्ची की भविष्य की शिक्षा और विवाह के खर्चों के लिए एक कोष बनाने के लिए प्रोत्साहित करती है।",
+    ministry: "Ministry of Finance",
+    lastVerified: new Date("2026-07-01"),
+    sourceUrl: "https://www.nsiindia.gov.in/"
   }
 ];
 
@@ -920,6 +974,32 @@ const seedDatabase = async () => {
     await connectDB();
     console.log('Clearing old schemes...');
     await Scheme.deleteMany({});
+    
+    // Attempt to generate embeddings if API key is present
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (apiKey) {
+      console.log('Generating embeddings for true RAG...');
+      // Note: using the older @langchain/google-genai or the new @google/genai SDK is possible. 
+      // Using @langchain/google-genai GoogleGenerativeAIEmbeddings for simplicity
+      const { GoogleGenerativeAIEmbeddings } = await import("@langchain/google-genai");
+      const embeddings = new GoogleGenerativeAIEmbeddings({
+        modelName: "text-embedding-004",
+        apiKey: apiKey
+      });
+
+      for (let i = 0; i < schemesData.length; i++) {
+        const scheme = schemesData[i];
+        const textToEmbed = `Name: ${scheme.name}\nDescription: ${scheme.description}\nTarget: ${scheme.targetGroups.join(', ')}\nBenefits: ${scheme.benefits}`;
+        const vector = await embeddings.embedQuery(textToEmbed);
+        scheme.embedding = vector;
+        console.log(`Embedded ${i + 1}/${schemesData.length}: ${scheme.schemeId}`);
+        // Add artificial delay to respect free tier rate limits
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    } else {
+      console.warn('WARNING: No Gemini API Key found. Skipping embedding generation.');
+    }
+
     console.log('Seeding new schemes...');
     await Scheme.insertMany(schemesData);
     console.log('Database seeded successfully!');

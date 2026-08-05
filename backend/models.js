@@ -24,7 +24,9 @@ const SchemeSchema = new mongoose.Schema({
   descriptionHindi: { type: String, required: true },
   ministry: { type: String },
   lastVerified: { type: Date, default: Date.now },
-  sourceUrl: { type: String }
+  sourceUrl: { type: String },
+  flagged: { type: Boolean, default: false },
+  embedding: [{ type: Number }]
 });
 
 const ChatSessionSchema = new mongoose.Schema({
@@ -49,6 +51,8 @@ const EligibilityProfileSchema = new mongoose.Schema({
   maritalStatus: { type: String, required: true },
   landAcres: { type: Number, required: true },
   annualIncome: { type: Number, required: true },
+  casteCategory: { type: String, default: 'General' },
+  languagePreference: { type: String, default: 'en' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -64,7 +68,10 @@ const UserSchema = new mongoose.Schema({
     occupation: { type: String, required: true },
     state: { type: String, required: true },
     gender: { type: String, required: true },
-    maritalStatus: { type: String, required: true }
+    maritalStatus: { type: String, required: true },
+    annualIncome: { type: Number, default: 0 },
+    casteCategory: { type: String, default: 'General' },
+    languagePreference: { type: String, default: 'en' }
   },
   createdAt: { type: Date, default: Date.now }
 });
