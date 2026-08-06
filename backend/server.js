@@ -233,7 +233,7 @@ app.post('/api/chat', chatLimiter, async (appReq, appRes) => {
           try {
             const { GoogleGenerativeAIEmbeddings } = await import("@langchain/google-genai");
             const embeddings = new GoogleGenerativeAIEmbeddings({
-              modelName: "text-embedding-004",
+              modelName: "embedding-001",
               apiKey: apiKey
             });
             const queryToEmbed = userProfileText ? `${message} (Profile: ${userProfileText})` : message;
@@ -285,7 +285,7 @@ Respond ONLY with the JSON structure. Do not output any conversational filler be
         });
 
         // Query LLM
-        const response = await model.call([
+        const response = await model.invoke([
           new SystemMessage(systemPrompt),
           ...historyMessages,
           new HumanMessage(message)

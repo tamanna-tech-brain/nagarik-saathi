@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { MessageSquare, RefreshCw, AlertTriangle, Mic, Award, Check } from 'lucide-react';
 
 export default function ChatScreen({
@@ -15,7 +16,7 @@ export default function ChatScreen({
         {/* Chat Window Title Bar */}
         <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between no-print">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-amber-650" />
+            <MessageSquare className="w-4 h-4 text-amber-655" />
             <span className="text-sm font-bold text-slate-800">
               {sessionType === 'operator' ? 'Operator Assist Chat / ऑपरेटर सहायता चैट' : 'Citizen Discovery Chat / नागरिक योजना खोज चैट'}
             </span>
@@ -77,7 +78,11 @@ export default function ChatScreen({
                   </div>
                   
                   <div className="text-sm leading-relaxed whitespace-pre-line prose prose-slate">
-                    {msg.content}
+                    {msg.role === 'user' ? (
+                      msg.content
+                    ) : (
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    )}
                   </div>
 
                   {msg.role === 'assistant' && msg.confidence === 'low' && (

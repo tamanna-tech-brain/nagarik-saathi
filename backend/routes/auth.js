@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Rate limiting for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit each IP to 10 requests per windowMs
+  max: 200, // limit each IP to 200 requests per windowMs
   message: { error: "Too many requests from this IP, please try again after 15 minutes." }
 });
 

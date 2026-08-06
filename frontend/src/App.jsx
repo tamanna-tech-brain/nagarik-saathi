@@ -291,16 +291,36 @@ export default function App() {
             annualIncome: res.data.profile.age > 40 ? 100000 : 150000
           });
         }
-        setPage('landing');
+        setPage(prevPage => (prevPage === 'login' || prevPage === 'register' ? 'landing' : prevPage));
       })
       .catch(err => {
         console.error("Auth verification failed", err);
         handleLogout();
       });
     } else {
-      setPage('login');
+      setPage(prevPage => (prevPage === 'register' ? 'register' : 'login'));
     }
   }, [token]);
+
+  // Redirect guard for detail page if state is missing
+  useEffect(() => {
+    if (page === 'detail' && !selectedScheme) {
+      setPage(token ? 'landing' : 'login');
+    }
+  }, [page, selectedScheme, token]);
+
+  // Fetch live VLE Impact Dashboard statistics from backend
+  useEffect(() => {
+    axios.get(`${API_BASE}/stats`)
+      .then(res => {
+        if (res.data) {
+          setOperatorStats(res.data);
+        }
+      })
+      .catch(err => {
+        console.warn("Using default operator stats:", err);
+      });
+  }, [page]);
 
   // Handle User Registration
   const handleRegister = async (e) => {
@@ -394,7 +414,7 @@ export default function App() {
         message: textToSend,
         sessionId,
         sessionType
-      }, { headers, timeout: 10000 }); // 10 second timeout
+      }, { headers, timeout: 25000 }); // 25 second timeout
 
       const { answer, sources, confidence } = response.data;
       setChatHistory(prev => [...prev, {

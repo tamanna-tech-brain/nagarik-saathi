@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import connectDB from './db.js';
-import { Scheme } from './models.js';
+import { Scheme, ChatSession, EligibilityProfile } from './models.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -913,59 +913,344 @@ const schemesData = [
     descriptionHindi: "एनएफबीएस राष्ट्रीय सामाजिक सहायता कार्यक्रम की एक उप-योजना है, जो कमाने वाले को खोने वाले परिवारों को वित्तीय सहायता प्रदान करती है।",
     ministry: "Ministry of Rural Development",
     lastVerified: new Date("2026-06-30"),
-    sourceUrl: "https://nsap.nic.in/"
   },
   {
-    schemeId: "lakhpati-didi",
-    name: "Lakhpati Didi Yojana",
-    nameHindi: "लखपति दीदी योजना",
-    category: ["Women Empowerment", "Financial Support"],
-    targetGroups: ["Women in SHGs", "Rural Women"],
+    schemeId: "jal-jeevan",
+    name: "Jal Jeevan Mission (Har Ghar Jal)",
+    nameHindi: "जल जीवन मिशन (हर घर जल)",
+    category: ["Infrastructure", "Rural Health"],
+    targetGroups: ["Rural Households"],
     eligibility: {
       occupation: ["All"],
-      gender: "Female",
+      gender: "All",
       maritalStatus: ["All"],
       minLandAcres: 0,
       maxLandAcres: 9999,
       states: ["All"],
-      maxAnnualIncome: 100000
+      maxAnnualIncome: 9999999
     },
-    benefits: "Skill training and financial linkages to Women Self-Help Groups (SHGs) to help them earn an annual income of ₹1,00,000 or more.",
-    benefitsHindi: "महिला स्वयं सहायता समूहों (SHGs) को कौशल प्रशिक्षण और वित्तीय संपर्क ताकि उन्हें ₹1,00,000 या अधिक की वार्षिक आय अर्जित करने में मदद मिल सके।",
-    documents: ["Aadhaar Card", "SHG Membership Proof", "Bank Account Details", "Income Certificate"],
-    applicationUrl: "https://nrlm.gov.in/",
-    helplineNumber: "011-23382747",
-    description: "An initiative under the Deendayal Antyodaya Yojana-National Rural Livelihoods Mission (DAY-NRLM) to encourage women to start micro-enterprises and achieve financial independence.",
-    descriptionHindi: "दीनदयाल अंत्योदय योजना-राष्ट्रीय ग्रामीण आजीविका मिशन (DAY-NRLM) के तहत महिलाओं को सूक्ष्म उद्यम शुरू करने और वित्तीय स्वतंत्रता प्राप्त करने के लिए प्रोत्साहित करने की एक पहल।",
-    ministry: "Ministry of Rural Development",
-    lastVerified: new Date("2026-07-28"),
-    sourceUrl: "https://lakhpatididi.gov.in/"
+    benefits: "Provides functional household tap connections (FHTC) delivering 55 liters per capita per day of prescribed quality potable water to every rural household.",
+    benefitsHindi: "प्रत्येक ग्रामीण परिवार को निर्धारित गुणवत्ता का 55 लीटर प्रति व्यक्ति प्रतिदिन नल का पेयजल उपलब्ध कराना।",
+    documents: ["Aadhaar Card", "Address Proof", "Ration Card"],
+    applicationUrl: "https://jaljeevanmission.gov.in/",
+    helplineNumber: "1800-1100-33",
+    description: "Envisages providing safe and adequate drinking water through individual household tap connections to all households in rural India by promoting community management.",
+    descriptionHindi: "सामुदायिक प्रबंधन को बढ़ावा देकर ग्रामीण भारत के सभी परिवारों को व्यक्तिगत घरेलू नल कनेक्शन के माध्यम से सुरक्षित पेयजल प्रदान करना।",
+    ministry: "Ministry of Jal Shakti",
+    lastVerified: new Date("2026-07-10"),
+    sourceUrl: "https://jaljeevanmission.gov.in/"
   },
   {
-    schemeId: "sukanya-samriddhi",
-    name: "Sukanya Samriddhi Yojana (SSY)",
-    nameHindi: "सुकन्या समृद्धि योजना",
-    category: ["Savings", "Child Welfare"],
-    targetGroups: ["Girl Child", "Parents of Girls"],
+    schemeId: "pm-gati-shakti",
+    name: "PM Gati Shakti National Master Plan",
+    nameHindi: "पीएम गति शक्ति राष्ट्रीय मास्टर प्लान",
+    category: ["Infrastructure", "Employment"],
+    targetGroups: ["Logistics Workers", "Contractors", "Unemployed"],
     eligibility: {
       occupation: ["All"],
-      gender: "Female", // the account is for the girl child
+      gender: "All",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["All"],
+      maxAnnualIncome: 9999999
+    },
+    benefits: "Integrated planning and synchronized execution of infrastructure projects across 16 ministries to generate large-scale employment and boost economic efficiency.",
+    benefitsHindi: "बड़े पैमाने पर रोजगार उत्पन्न करने और आर्थिक दक्षता को बढ़ावा देने के लिए 16 मंत्रालयों में बुनियादी ढांचा परियोजनाओं का एकीकृत नियोजन।",
+    documents: ["Business Registration", "Aadhaar Card", "GST Certificate"],
+    applicationUrl: "https://pmgatishakti.gov.in/",
+    helplineNumber: "011-23061200",
+    description: "A transformative approach for economic growth and sustainable development driven by 7 engines: Roads, Railways, Airports, Ports, Mass Transport, Waterways, and Logistics Infrastructure.",
+    descriptionHindi: "7 इंजनों द्वारा संचालित आर्थिक विकास और सतत विकास के लिए एक परिवर्तनकारी दृष्टिकोण: सड़क, रेलवे, हवाई अड्डे, बंदरगाह, जलमार्ग और लॉजिस्टिक्स इंफ्रास्ट्रक्चर।",
+    ministry: "Ministry of Commerce and Industry",
+    lastVerified: new Date("2026-06-15"),
+    sourceUrl: "https://pmgatishakti.gov.in/"
+  },
+  {
+    schemeId: "pm-shri",
+    name: "PM Schools for Rising India (PM SHRI)",
+    nameHindi: "पीएम श्री स्कूल योजना",
+    category: ["Education"],
+    targetGroups: ["Students", "Teachers"],
+    eligibility: {
+      occupation: ["Student", "Unemployed"],
+      gender: "All",
       maritalStatus: ["Single"],
       minLandAcres: 0,
       maxLandAcres: 9999,
       states: ["All"],
       maxAnnualIncome: 9999999
     },
-    benefits: "High-interest savings account for girl children, providing tax benefits under Section 80C and financial security for their education and marriage.",
-    benefitsHindi: "बालिकाओं के लिए उच्च-ब्याज बचत खाता, जो धारा 80C के तहत कर लाभ और उनकी शिक्षा और विवाह के लिए वित्तीय सुरक्षा प्रदान करता है।",
-    documents: ["Birth Certificate of Girl Child", "Aadhaar Card of Parent/Guardian", "Address Proof of Parent/Guardian"],
-    applicationUrl: "https://www.indiapost.gov.in/",
-    helplineNumber: "1800-266-6868",
-    description: "A government-backed savings scheme targeted at the parents of girl children, encouraging them to build a fund for the future education and marriage expenses of their female child.",
-    descriptionHindi: "बालिकाओं के माता-पिता के लक्षित एक सरकारी समर्थित बचत योजना, जो उन्हें अपनी बच्ची की भविष्य की शिक्षा और विवाह के खर्चों के लिए एक कोष बनाने के लिए प्रोत्साहित करती है।",
-    ministry: "Ministry of Finance",
-    lastVerified: new Date("2026-07-01"),
-    sourceUrl: "https://www.nsiindia.gov.in/"
+    benefits: "Upgradation of over 14,500 schools as exemplar institutes showcasing NEP 2020 implementation with smart classrooms, modern labs, and holistic education.",
+    benefitsHindi: "स्मार्ट क्लासरूम, आधुनिक लैब और समग्र शिक्षा के साथ एनईपी 2020 कार्यान्वयन को प्रदर्शित करने वाले 14,500 से अधिक स्कूलों का उन्नयन।",
+    documents: ["Student Aadhaar Card", "School Enrollment ID", "Transfer Certificate"],
+    applicationUrl: "https://pmshrischools.education.gov.in/",
+    helplineNumber: "011-23383936",
+    description: "Centrally sponsored scheme for developing schools into green, modern, and inclusive institutions delivering experiential and learner-centric education.",
+    descriptionHindi: "स्कूलों को हरित, आधुनिक और समावेशी संस्थानों में विकसित करने के लिए केंद्र प्रायोजित योजना।",
+    ministry: "Ministry of Education",
+    lastVerified: new Date("2026-07-20"),
+    sourceUrl: "https://pmshrischools.education.gov.in/"
+  },
+  {
+    schemeId: "pm-matsya-sampada",
+    name: "Pradhan Mantri Matsya Sampada Yojana (PMMSY)",
+    nameHindi: "प्रधानमंत्री मत्स्य संपदा योजना (PMMSY)",
+    category: ["Fisheries", "Agriculture"],
+    targetGroups: ["Fish Farmers", "Fish Vendors", "SHGs"],
+    eligibility: {
+      occupation: ["Farmer", "Business Owner", "Labourer"],
+      gender: "All",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["All"],
+      maxAnnualIncome: 500000
+    },
+    benefits: "Financial assistance up to 60% for SC/ST/Women beneficiaries and 40% for General categories to establish aquaculture units, hatcheries, and cold chain logistics.",
+    benefitsHindi: "जलीय कृषि इकाइयों, हैचरी और कोल्ड चेन लॉजिस्टिक्स स्थापित करने के लिए अनुसूचित जाति/अनुसूचित जनजाति/महिला लाभार्थियों के लिए 60% और सामान्य श्रेणी के लिए 40% तक की वित्तीय सहायता।",
+    documents: ["Aadhaar Card", "Land / Water Body Documents", "Bank Passbook", "Caste Certificate"],
+    applicationUrl: "https://pmmsy.dof.gov.in/",
+    helplineNumber: "1800-425-1660",
+    description: "Flagship scheme for ecological and holistic development of the fisheries sector in India to double fish farmers' incomes and boost exports.",
+    descriptionHindi: "मछली पालकों की आय को दोगुना करने और निर्यात को बढ़ावा देने के लिए भारत में मत्स्य पालन क्षेत्र के विकास की प्रमुख योजना।",
+    ministry: "Ministry of Fisheries, Animal Husbandry and Dairying",
+    lastVerified: new Date("2026-06-28"),
+    sourceUrl: "https://pmmsy.dof.gov.in/"
+  },
+  {
+    schemeId: "pm-kisan-maandhan",
+    name: "Pradhan Mantri Kisan Maandhan Yojana (PM-KMY)",
+    nameHindi: "प्रधानमंत्री किसान मानधन योजना (PM-KMY)",
+    category: ["Pension", "Agriculture"],
+    targetGroups: ["Small and Marginal Farmers"],
+    eligibility: {
+      occupation: ["Farmer"],
+      gender: "All",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 5,
+      states: ["All"],
+      maxAnnualIncome: 300000
+    },
+    benefits: "Assured monthly pension of ₹3,000 to small and marginal farmers upon attaining 60 years of age, with equal matching contribution by Government of India.",
+    benefitsHindi: "छोटे और सीमांत किसानों को 60 वर्ष की आयु प्राप्त करने पर ₹3,000 की सुनिश्चित मासिक पेंशन, भारत सरकार द्वारा समान योगदान के साथ।",
+    documents: ["Aadhaar Card", "Khasra/Khatauni Land Record", "Savings Bank Account / PM-KISAN Account Details"],
+    applicationUrl: "https://pmkmy.gov.in/",
+    helplineNumber: "1800-267-6888",
+    description: "Voluntary and contributory pension scheme for small and marginal farmers aged 18 to 40 years to provide social security in their old age.",
+    descriptionHindi: "18 से 40 वर्ष की आयु के छोटे और सीमांत किसानों के लिए वृद्धावस्था में सामाजिक सुरक्षा प्रदान करने के लिए स्वैच्छिक और अंशदायी पेंशन योजना।",
+    ministry: "Ministry of Agriculture and Farmers Welfare",
+    lastVerified: new Date("2026-07-05"),
+    sourceUrl: "https://pmkmy.gov.in/"
+  },
+  {
+    schemeId: "atal-bhujal",
+    name: "Atal Bhujal Yojana (ATAL JAL)",
+    nameHindi: "अटल भूजल योजना",
+    category: ["Water Management", "Agriculture"],
+    targetGroups: ["Farmers", "Panchayats"],
+    eligibility: {
+      occupation: ["Farmer", "Labourer", "All"],
+      gender: "All",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["Gujarat", "Haryana", "Karnataka", "Madhya Pradesh", "Maharashtra", "Rajasthan", "Uttar Pradesh"],
+      maxAnnualIncome: 9999999
+    },
+    benefits: "Promotes community-led groundwater management, drip irrigation subsidies, and water budgeting in 8,350 water-stressed Gram Panchayats.",
+    benefitsHindi: "8,350 जल-संकटग्रस्त ग्राम पंचायतों में सामुदायिक नेतृत्व वाले भूजल प्रबंधन, ड्रिप सिंचाई सब्सिडी और जल बजट को बढ़ावा देना।",
+    documents: ["Aadhaar Card", "Land Ownership Proof", "Panchayat Verification"],
+    applicationUrl: "https://ataljal.mowr.gov.in/",
+    helplineNumber: "011-23383500",
+    description: "Central Sector scheme aiming to improve groundwater management through behavioral change and community participation across 7 water-stressed states.",
+    descriptionHindi: "7 जल-तनावग्रस्त राज्यों में व्यवहार परिवर्तन और सामुदायिक भागीदारी के माध्यम से भूजल प्रबंधन में सुधार लाने का उद्देश्य।",
+    ministry: "Ministry of Jal Shakti",
+    lastVerified: new Date("2026-06-18"),
+    sourceUrl: "https://ataljal.mowr.gov.in/"
+  },
+  {
+    schemeId: "samagra-shiksha",
+    name: "Samagra Shiksha Abhiyan",
+    nameHindi: "समग्र शिक्षा अभियान",
+    category: ["Education", "Child Welfare"],
+    targetGroups: ["School Children", "CWSN Students"],
+    eligibility: {
+      occupation: ["Student", "Unemployed"],
+      gender: "All",
+      maritalStatus: ["Single"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["All"],
+      maxAnnualIncome: 9999999
+    },
+    benefits: "Free textbooks, uniforms, transport allowances, self-defense training for girls, and special aid for Children with Special Needs (CWSN).",
+    benefitsHindi: "मुफ्त पाठ्यपुस्तकें, वर्दी, परिवहन भत्ता, लड़कियों के लिए आत्मरक्षा प्रशिक्षण और विशेष आवश्यकता वाले बच्चों के लिए विशेष सहायता।",
+    documents: ["Student Aadhaar Card", "School Enrollment Number", "Disability Certificate (if CWSN)"],
+    applicationUrl: "https://samagrashiksha.in/",
+    helplineNumber: "011-23383936",
+    description: "Overarching program for the school education sector extending from pre-school to class 12, focusing on inclusive and equitable quality education.",
+    descriptionHindi: "प्री-स्कूल से कक्षा 12 तक स्कूली शिक्षा क्षेत्र के लिए सर्वव्यापी कार्यक्रम, जो समावेशी और न्यायसंगत गुणवत्तापूर्ण शिक्षा पर केंद्रित है।",
+    ministry: "Ministry of Education",
+    lastVerified: new Date("2026-07-12"),
+    sourceUrl: "https://samagrashiksha.in/"
+  },
+  {
+    schemeId: "mukhya-mantri-kanya-sumangala",
+    name: "Mukhyamantri Kanya Sumangala Yojana (Uttar Pradesh)",
+    nameHindi: "मुख्यमंत्री कन्या सुमंगला योजना (उत्तर प्रदेश)",
+    category: ["Women Welfare", "Education"],
+    targetGroups: ["Girl Children in UP"],
+    eligibility: {
+      occupation: ["Student", "Unemployed", "All"],
+      gender: "Female",
+      maritalStatus: ["Single"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["Uttar Pradesh"],
+      maxAnnualIncome: 300000
+    },
+    benefits: "Financial grant up to ₹25,000 paid in 6 installments from birth through higher education to support health and education of girl children.",
+    benefitsHindi: "बालिकाओं के स्वास्थ्य और शिक्षा का समर्थन करने के लिए जन्म से लेकर उच्च शिक्षा तक 6 किश्तों में ₹25,000 तक का वित्तीय अनुदान।",
+    documents: ["Birth Certificate of Girl Child", "Guardian Domicile Certificate of UP", "Income Certificate", "Bank Account Details"],
+    applicationUrl: "https://mksy.up.gov.in/",
+    helplineNumber: "1800-180-5123",
+    description: "Flagship social welfare scheme of Uttar Pradesh Government to prevent female foeticide, promote education, and empower young girls.",
+    descriptionHindi: "कन्या भ्रूण हत्या को रोकने, शिक्षा को बढ़ावा देने और युवा लड़कियों को सशक्त बनाने के लिए उत्तर प्रदेश सरकार की प्रमुख कल्याणकारी योजना।",
+    ministry: "Women and Child Development Dept, Govt of Uttar Pradesh",
+    lastVerified: new Date("2026-07-22"),
+    sourceUrl: "https://mksy.up.gov.in/"
+  },
+  {
+    schemeId: "majhi-ladki-bahin",
+    name: "Mukhyamantri Majhi Ladki Bahin Yojana (Maharashtra)",
+    nameHindi: "मुख्यमंत्री माझी लाडकी बहिन योजना (महाराष्ट्र)",
+    category: ["Women Empowerment", "Direct Benefit Transfer"],
+    targetGroups: ["Women in Maharashtra"],
+    eligibility: {
+      occupation: ["All"],
+      gender: "Female",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["Maharashtra"],
+      maxAnnualIncome: 250000
+    },
+    benefits: "Direct monthly cash transfer of ₹1,500 into the Aadhaar-linked bank accounts of eligible women aged 21 to 65 years.",
+    benefitsHindi: "21 से 65 वर्ष की पात्र महिलाओं के आधार-संबद्ध बैंक खातों में ₹1,500 की प्रत्यक्ष मासिक नकद सहायता।",
+    documents: ["Aadhaar Card", "Maharashtra Domicile Certificate", "Income Certificate / Yellow-Orange Ration Card", "Bank Passbook"],
+    applicationUrl: "https://ladkibahin.maharashtra.gov.in/",
+    helplineNumber: "181",
+    description: "Social welfare initiative by Maharashtra Government providing financial autonomy and nutritional support to underprivileged women.",
+    descriptionHindi: "महाराष्ट्र सरकार द्वारा वंचित महिलाओं को वित्तीय स्वायत्तता और पोषण संबंधी सहायता प्रदान करने की सामाजिक कल्याणकारी पहल।",
+    ministry: "Women and Child Development Dept, Govt of Maharashtra",
+    lastVerified: new Date("2026-07-29"),
+    sourceUrl: "https://ladkibahin.maharashtra.gov.in/"
+  },
+  {
+    schemeId: "subhadra-yojana",
+    name: "Subhadra Yojana (Odisha)",
+    nameHindi: "सुभद्रा योजना (ओडिशा)",
+    category: ["Women Empowerment", "Financial Security"],
+    targetGroups: ["Women in Odisha"],
+    eligibility: {
+      occupation: ["All"],
+      gender: "Female",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["Odisha"],
+      maxAnnualIncome: 250000
+    },
+    benefits: "Financial grant of ₹10,000 per year paid in two equal installments of ₹5,000 on Raksha Bandhan and International Women's Day for 5 years (Total ₹50,000).",
+    benefitsHindi: "5 वर्षों के लिए रक्षाबंधन और अंतर्राष्ट्रीय महिला दिवस पर ₹5,000 की दो समान किश्तों में ₹10,000 प्रति वर्ष का वित्तीय अनुदान (कुल ₹50,000)।",
+    documents: ["Aadhaar Card", "Single-holder Bank Account linked with Aadhaar", "Odisha Domicile Certificate"],
+    applicationUrl: "https://subhadra.odisha.gov.in/",
+    helplineNumber: "14545",
+    description: "Transformational scheme by Government of Odisha to empower women aged 21-60 years by providing financial assistance via e-KYC direct transfers.",
+    descriptionHindi: "ई-केवाईसी प्रत्यक्ष हस्तांतरण के माध्यम से वित्तीय सहायता प्रदान करके 21-60 वर्ष की आयु की महिलाओं को सशक्त बनाने के लिए ओडिशा सरकार की परिवर्तनकारी योजना।",
+    ministry: "Women and Child Development Dept, Govt of Odisha",
+    lastVerified: new Date("2026-07-25"),
+    sourceUrl: "https://subhadra.odisha.gov.in/"
+  },
+  {
+    schemeId: "griha-lakshmi",
+    name: "Gruha Lakshmi Scheme (Karnataka)",
+    nameHindi: "गृह लक्ष्मी योजना (कर्नाटक)",
+    category: ["Women Empowerment", "Financial Support"],
+    targetGroups: ["Female Heads of Household in Karnataka"],
+    eligibility: {
+      occupation: ["All"],
+      gender: "Female",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["Karnataka"],
+      maxAnnualIncome: 300000
+    },
+    benefits: "Direct financial assistance of ₹2,000 per month provided to the female head of every eligible family in Karnataka.",
+    benefitsHindi: "कर्नाटक में प्रत्येक पात्र परिवार की महिला मुखिया को प्रतिमाह ₹2,000 की प्रत्यक्ष वित्तीय सहायता प्रदान की जाती है।",
+    documents: ["Aadhaar Card of Female Head", "Husband's Aadhaar Card", "Ration Card (BPL/APL)", "Bank Account Details"],
+    applicationUrl: "https://sevasindhugs.karnataka.gov.in/",
+    helplineNumber: "1902",
+    description: "One of the five major guarantee schemes of Karnataka Government to support housewife livelihoods and reduce household expenses.",
+    descriptionHindi: "गृहणियों की आजीविका का समर्थन करने और घरेलू खर्चों को कम करने के लिए कर्नाटक सरकार की पांच प्रमुख गारंटी योजनाओं में से एक।",
+    ministry: "Women and Child Development Dept, Govt of Karnataka",
+    lastVerified: new Date("2026-07-18"),
+    sourceUrl: "https://sevasindhugs.karnataka.gov.in/"
+  },
+  {
+    schemeId: "pm-jan-man",
+    name: "PM Janjati Adivasi Nyaya Maha Abhiyan (PM JANMAN)",
+    nameHindi: "पीएम जनजाति आदिवासी न्याय महा अभियान",
+    category: ["Tribal Welfare", "Infrastructure"],
+    targetGroups: ["Particularly Vulnerable Tribal Groups (PVTGs)"],
+    eligibility: {
+      occupation: ["All", "Farmer", "Labourer"],
+      gender: "All",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["All"],
+      maxAnnualIncome: 200000
+    },
+    benefits: "Comprehensive saturation of 11 critical interventions including housing, clean drinking water, electricity, mobile connectivity, and Van Dhan Vikas Kendras.",
+    benefitsHindi: "पक्के घर, स्वच्छ पेयजल, बिजली, मोबाइल कनेक्टिविटी और वन धन विकास केंद्रों सहित 11 महत्वपूर्ण हस्तक्षेपों का व्यापक कवरेज।",
+    documents: ["ST Certificate", "Aadhaar Card", "Ration Card"],
+    applicationUrl: "https://tribal.gov.in/",
+    helplineNumber: "011-23381420",
+    description: "Mission to improve socio-economic conditions of Particularly Vulnerable Tribal Groups (PVTGs) by saturating PVTG households with basic facilities.",
+    descriptionHindi: "विशेष रूप से कमजोर जनजातीय समूहों (PVTGs) के सामाजिक-आर्थिक स्थितियों में सुधार लाने के लिए बुनियादी सुविधाओं से लैस करने का मिशन।",
+    ministry: "Ministry of Tribal Affairs",
+    lastVerified: new Date("2026-06-25"),
+    sourceUrl: "https://tribal.gov.in/"
+  },
+  {
+    schemeId: "pm-e-bus-sewa",
+    name: "PM-eBus Sewa Scheme",
+    nameHindi: "पीएम-ईबस सेवा योजना",
+    category: ["Urban Transport", "Environment"],
+    targetGroups: ["Urban Citizens", "Transit Workers"],
+    eligibility: {
+      occupation: ["All"],
+      gender: "All",
+      maritalStatus: ["All"],
+      minLandAcres: 0,
+      maxLandAcres: 9999,
+      states: ["All"],
+      maxAnnualIncome: 9999999
+    },
+    benefits: "Deploys 10,000 electric buses in 169 cities under Public-Private Partnership (PPP) model to provide clean, affordable, and smart urban public transport.",
+    benefitsHindi: "स्वच्छ, किफायती और स्मार्ट शहरी सार्वजनिक परिवहन प्रदान करने के लिए पीपीपी मॉडल के तहत 169 शहरों में 10,000 इलेक्ट्रिक बसें तैनात करना।",
+    documents: ["N/A - Public Service Infrastructure"],
+    applicationUrl: "https://mohua.gov.in/",
+    helplineNumber: "011-23063221",
+    description: "A green urban mobility initiative to augment bus operations and green urban transit infrastructure in cities with population between 3 to 40 Lakhs.",
+    descriptionHindi: "3 से 40 लाख के बीच की आबादी वाले शहरों में बस संचालन और हरित शहरी पारगमन बुनियादी ढांचे को बढ़ाने के लिए एक हरित शहरी गतिशीलता पहल।",
+    ministry: "Ministry of Housing and Urban Affairs",
+    lastVerified: new Date("2026-07-08"),
+    sourceUrl: "https://mohua.gov.in/"
   }
 ];
 
@@ -979,22 +1264,30 @@ const seedDatabase = async () => {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (apiKey) {
       console.log('Generating embeddings for true RAG...');
-      // Note: using the older @langchain/google-genai or the new @google/genai SDK is possible. 
-      // Using @langchain/google-genai GoogleGenerativeAIEmbeddings for simplicity
-      const { GoogleGenerativeAIEmbeddings } = await import("@langchain/google-genai");
-      const embeddings = new GoogleGenerativeAIEmbeddings({
-        modelName: "text-embedding-004",
-        apiKey: apiKey
-      });
+      try {
+        const { GoogleGenerativeAIEmbeddings } = await import("@langchain/google-genai");
+        const embeddings = new GoogleGenerativeAIEmbeddings({
+          modelName: "embedding-001",
+          apiKey: apiKey
+        });
+        
+        // Test first item to verify if embedding endpoint is supported on this key
+        const firstScheme = schemesData[0];
+        const testText = `Name: ${firstScheme.name}\nDescription: ${firstScheme.description}`;
+        const firstVec = await embeddings.embedQuery(testText);
+        firstScheme.embedding = firstVec;
+        console.log(`Embedded 1/${schemesData.length}: ${firstScheme.schemeId}`);
 
-      for (let i = 0; i < schemesData.length; i++) {
-        const scheme = schemesData[i];
-        const textToEmbed = `Name: ${scheme.name}\nDescription: ${scheme.description}\nTarget: ${scheme.targetGroups.join(', ')}\nBenefits: ${scheme.benefits}`;
-        const vector = await embeddings.embedQuery(textToEmbed);
-        scheme.embedding = vector;
-        console.log(`Embedded ${i + 1}/${schemesData.length}: ${scheme.schemeId}`);
-        // Add artificial delay to respect free tier rate limits
-        await new Promise(resolve => setTimeout(resolve, 500));
+        for (let i = 1; i < schemesData.length; i++) {
+          const scheme = schemesData[i];
+          const textToEmbed = `Name: ${scheme.name}\nDescription: ${scheme.description}\nTarget: ${scheme.targetGroups.join(', ')}\nBenefits: ${scheme.benefits}`;
+          const vector = await embeddings.embedQuery(textToEmbed);
+          scheme.embedding = vector;
+          console.log(`Embedded ${i + 1}/${schemesData.length}: ${scheme.schemeId}`);
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      } catch (embedErr) {
+        console.warn('Embedding endpoint not supported for this API key. Skipping vector generation and proceeding with scheme database seeding:', embedErr.message);
       }
     } else {
       console.warn('WARNING: No Gemini API Key found. Skipping embedding generation.');
@@ -1002,7 +1295,51 @@ const seedDatabase = async () => {
 
     console.log('Seeding new schemes...');
     await Scheme.insertMany(schemesData);
-    console.log('Database seeded successfully!');
+    console.log(`Successfully seeded ${schemesData.length} schemes!`);
+
+    console.log('Seeding demo sessions & profiles for VLE Dashboard...');
+    await ChatSession.deleteMany({});
+    await EligibilityProfile.deleteMany({});
+
+    const demoSessions = [
+      {
+        sessionId: 'demo-session-001',
+        sessionType: 'operator',
+        messages: [
+          { role: 'user', content: 'kisan ke liye kya scheme hai MP mein', timestamp: new Date(Date.now() - 3600000) },
+          { role: 'assistant', content: 'PM-Kisan Samman Nidhi aur Mukhyamantri Kisan Kalyan Yojana aapke liye best hai...', sourceSchemeIds: ['pm-kisan', 'mp-kisan-kalyan'], confidence: 'high', timestamp: new Date(Date.now() - 3595000) }
+        ]
+      },
+      {
+        sessionId: 'demo-session-002',
+        sessionType: 'operator',
+        messages: [
+          { role: 'user', content: 'widow pension scheme in Madhya Pradesh', timestamp: new Date(Date.now() - 7200000) },
+          { role: 'assistant', content: 'Indira Gandhi National Widow Pension Scheme (IGNWPS) offers monthly financial assistance...', sourceSchemeIds: ['ign-widow-pension'], confidence: 'high', timestamp: new Date(Date.now() - 7195000) }
+        ]
+      },
+      {
+        sessionId: 'demo-session-003',
+        sessionType: 'self',
+        messages: [
+          { role: 'user', content: 'girl child education scheme', timestamp: new Date(Date.now() - 86400000) },
+          { role: 'assistant', content: 'Sukanya Samriddhi Yojana (SSY) provides a high-interest savings account for girl children...', sourceSchemeIds: ['sukanya-samriddhi'], confidence: 'high', timestamp: new Date(Date.now() - 86395000) }
+        ]
+      }
+    ];
+
+    const demoProfiles = [
+      { sessionId: 'demo-p1', state: 'Madhya Pradesh', occupation: 'Farmer', gender: 'Male', maritalStatus: 'Married', landAcres: 2.5, annualIncome: 120000, casteCategory: 'OBC', languagePreference: 'hi', createdAt: new Date(Date.now() - 1800000) },
+      { sessionId: 'demo-p2', state: 'Uttar Pradesh', occupation: 'Artisan', gender: 'Male', maritalStatus: 'Married', landAcres: 0, annualIncome: 90000, casteCategory: 'SC', languagePreference: 'hi', createdAt: new Date(Date.now() - 3600000) },
+      { sessionId: 'demo-p3', state: 'Bihar', occupation: 'Student', gender: 'Female', maritalStatus: 'Single', landAcres: 0, annualIncome: 60000, casteCategory: 'OBC', languagePreference: 'hi', createdAt: new Date(Date.now() - 7200000) },
+      { sessionId: 'demo-p4', state: 'Maharashtra', occupation: 'Labourer', gender: 'Female', maritalStatus: 'Widowed', landAcres: 0, annualIncome: 45000, casteCategory: 'General', languagePreference: 'mr', createdAt: new Date(Date.now() - 14400000) },
+      { sessionId: 'demo-p5', state: 'Rajasthan', occupation: 'Unemployed', gender: 'Female', maritalStatus: 'Married', landAcres: 1, annualIncome: 80000, casteCategory: 'ST', languagePreference: 'hi', createdAt: new Date(Date.now() - 28800000) }
+    ];
+
+    await ChatSession.insertMany(demoSessions);
+    await EligibilityProfile.insertMany(demoProfiles);
+    console.log('Successfully seeded demo sessions & profiles!');
+
     mongoose.connection.close();
   } catch (error) {
     console.error(`Seeding failed: ${error.message}`);

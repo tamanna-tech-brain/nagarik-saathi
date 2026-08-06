@@ -57,7 +57,7 @@ export default function ResultsScreen({ screenerResults, screenerLoading, profil
               <div className="p-6 flex-grow space-y-3">
                 <div className="flex justify-between items-start gap-2">
                   <span className="px-2.5 py-0.5 rounded-full bg-slate-50 border border-slate-200 text-slate-500 text-[10px] font-mono font-semibold">
-                    {scheme.category[0]}
+                    {scheme.category?.[0] || 'General'}
                   </span>
                   
                   <div className="flex flex-col items-end gap-1">
