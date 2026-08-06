@@ -557,123 +557,126 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-100 flex flex-col font-sans relative overflow-x-hidden selection:bg-amber-600 selection:text-white">
-      {/* Background Gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[60%] rounded-full bg-gradient-to-br from-amber-600/10 via-orange-600/5 to-transparent blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[50%] rounded-full bg-gradient-to-tr from-brand-700/10 via-amber-600/5 to-transparent blur-[120px] pointer-events-none" />
-
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans relative overflow-x-hidden selection:bg-amber-600 selection:text-white bg-grid-pattern">
       {/* Global Navbar */}
       {globalError && (
-        <div className="bg-red-600/90 text-white text-sm font-semibold text-center py-2 z-50 relative animate-fade-in flex items-center justify-center gap-2">
+        <div className="bg-red-600 text-white text-sm font-semibold text-center py-2.5 z-50 relative animate-fade-in flex items-center justify-center gap-2 shadow-sm">
           <AlertTriangle className="w-4 h-4" /> {globalError}
         </div>
       )}
-      {token && page !== 'login' && page !== 'register' && (
-        <nav className="no-print border-b border-stone-800 bg-stone-950/80 backdrop-blur-md sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setPage('landing')}>
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-900/20">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <span className="text-xl font-bold tracking-tight text-white font-display">Nagarik<span className="text-amber-500">Saathi</span></span>
-                <span className="text-[10px] block text-stone-400 font-mono tracking-widest uppercase">Portal</span>
-              </div>
+
+      <nav className="no-print border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => token && setPage('landing')}>
+            <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm">
+              <Sparkles className="h-5 w-5 text-amber-500" />
             </div>
-
-            {/* User Profile Info Chip (State and Occupation display) */}
-            {currentUser && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-900 border border-stone-800 text-xs text-stone-300">
-                <MapPin className="w-3.5 h-3.5 text-amber-500" />
-                <span>State: <strong className="text-white">{currentUser.profile?.state}</strong></span>
-                <span className="text-stone-600">|</span>
-                <Briefcase className="w-3.5 h-3.5 text-amber-500" />
-                <span>Job: <strong className="text-white">{currentUser.profile?.occupation}</strong></span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-4">
-              {/* Language Switcher */}
-              <button 
-                onClick={() => setLangMode(prev => prev === 'en' ? 'hi' : 'en')}
-                className="flex items-center gap-1 text-xs text-stone-400 hover:text-white px-2.5 py-1.5 rounded-lg border border-stone-800 bg-stone-900 transition-colors"
-                title="Switch Language / भाषा बदलें"
-              >
-                <Globe className="w-3.5 h-3.5 text-amber-500" />
-                <span>{langMode === 'en' ? 'हिंदी' : 'English'}</span>
-              </button>
-
-              {/* API settings button */}
-              <button
-                onClick={() => setShowSettings(true)}
-                className="text-stone-400 hover:text-white p-2 rounded-lg border border-stone-800 bg-stone-900 transition-colors"
-                title={t[langMode].settingsTitle}
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-
-              <button 
-                onClick={() => setPage('dashboard')} 
-                className="flex items-center gap-1.5 text-xs text-amber-500 hover:text-white px-2.5 py-1.5 rounded-lg border border-amber-500/25 bg-stone-900 transition-colors"
-                title="VLE Dashboard / प्रदर्शन डैशबोर्ड"
-              >
-                <TrendingUp className="w-3.5 h-3.5" />
-                <span>Dashboard</span>
-              </button>
-
-              <button 
-                onClick={() => setPage('landing')} 
-                className="text-stone-300 hover:text-white text-sm font-medium transition-colors"
-              >
-                {t[langMode].home}
-              </button>
-              
-              <button 
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20 bg-stone-900 transition-colors"
-                title={t[langMode].logout}
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>{t[langMode].logout}</span>
-              </button>
+            <div>
+              <span className="text-xl font-bold tracking-tight text-slate-900 font-display">Nagarik<span className="text-amber-600">Saathi</span></span>
+              <span className="text-[10px] block text-slate-400 font-mono tracking-widest uppercase font-semibold">Portal</span>
             </div>
           </div>
-        </nav>
-      )}
+
+          {/* User Profile Info Chip (State and Occupation display) */}
+          {token && currentUser && (
+            <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-600">
+              <MapPin className="w-3.5 h-3.5 text-amber-600" />
+              <span>State: <strong className="text-slate-900">{currentUser.profile?.state}</strong></span>
+              <span className="text-slate-350">|</span>
+              <Briefcase className="w-3.5 h-3.5 text-amber-600" />
+              <span>Job: <strong className="text-slate-900">{currentUser.profile?.occupation}</strong></span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3">
+            {/* Language Switcher */}
+            <button 
+              onClick={() => setLangMode(prev => prev === 'en' ? 'hi' : 'en')}
+              className="flex items-center gap-1.5 text-xs text-slate-655 hover:text-slate-900 hover:bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 bg-white transition-all font-medium shadow-xs"
+              title="Switch Language / भाषा बदलें"
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-650" />
+              <span>{langMode === 'en' ? 'हिंदी' : 'English'}</span>
+            </button>
+
+            {token ? (
+              <>
+                {/* API settings button */}
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="text-slate-655 hover:text-slate-900 hover:bg-slate-50 p-2 rounded-lg border border-slate-200 bg-white transition-all"
+                  title={t[langMode].settingsTitle}
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+
+                <button 
+                  onClick={() => setPage('dashboard')} 
+                  className="flex items-center gap-1.5 text-xs text-amber-700 hover:text-white px-3 py-2 rounded-lg border border-amber-200/50 bg-amber-50/50 hover:bg-amber-600 transition-all font-semibold"
+                  title="VLE Dashboard / प्रदर्शन डैशबोर्ड"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span>Dashboard</span>
+                </button>
+
+                <button 
+                  onClick={() => setPage('landing')} 
+                  className="text-slate-655 hover:text-slate-900 text-sm font-semibold transition-colors px-2 py-2"
+                >
+                  {t[langMode].home}
+                </button>
+                
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 text-xs text-red-655 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg border border-red-100 bg-white transition-all font-semibold"
+                  title={t[langMode].logout}
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>{t[langMode].logout}</span>
+                </button>
+              </>
+            ) : (
+              <span className="text-xs text-slate-550 border-l border-slate-200 pl-3 font-semibold hidden sm:inline">
+                National Discovery Hub
+              </span>
+            )}
+          </div>
+        </div>
+      </nav>
 
       {/* Dynamic API Configuration Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm no-print">
-          <div className="w-full max-w-md p-6 bg-stone-900 border border-stone-800 rounded-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Settings className="w-5 h-5 text-amber-500" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm no-print">
+          <div className="w-full max-w-md p-6 bg-white border border-slate-200 rounded-2xl shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Settings className="w-5 h-5 text-amber-600" />
                 {t[langMode].settingsTitle}
               </h3>
-              <button onClick={() => setShowSettings(false)} className="text-stone-500 hover:text-white">&times;</button>
+              <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-700 text-xl font-medium">&times;</button>
             </div>
 
             <form onSubmit={handleSaveApiKey} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs text-stone-300 font-bold block">Gemini API Key</label>
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-600 font-bold block">Gemini API Key</label>
                 <input
                   type="password"
                   placeholder="AIzaSy..."
                   value={customApiKey}
                   onChange={(e) => setCustomApiKey(e.target.value)}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-955 focus:outline-none focus:border-amber-650 focus:bg-white transition-colors"
                 />
               </div>
 
               {settingsMessage && (
-                <div className={`p-3 rounded-lg text-xs font-semibold ${settingsMessage.includes('fail') || settingsMessage.includes('विफल') ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
+                <div className={`p-3 rounded-lg text-xs font-semibold ${settingsMessage.includes('fail') || settingsMessage.includes('विफल') ? 'bg-red-55 text-red-655 border border-red-100' : 'bg-green-55 text-green-655 border border-green-100'}`}>
                   {settingsMessage}
                 </div>
               )}
 
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl text-sm font-bold"
+                className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold shadow-sm transition-colors"
               >
                 {t[langMode].saveSettings}
               </button>
@@ -804,28 +807,27 @@ export default function App() {
       </main>
 
       {/* Global Footer */}
-      {token && page !== 'login' && page !== 'register' && (
-        <footer className="no-print mt-auto border-t border-stone-900 bg-stone-950 text-center py-6 text-xs text-stone-500">
-          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p>© 2026 NagarikSaathi Assistant. Built for rural VLE operators.</p>
-            <div className="flex gap-4">
-              <span>Privacy / गोपनीयता</span>
-              <span>Terms / शर्तें</span>
-            </div>
+      <footer className="no-print mt-auto border-t border-slate-200 bg-white text-center py-6 text-xs text-slate-500 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p>© 2026 NagarikSaathi Assistant. AI-Powered Government Scheme Discovery for India.</p>
+          <div className="flex gap-4">
+            <span className="hover:underline cursor-pointer">Privacy Policy / गोपनीयता नीति</span>
+            <span className="hover:underline cursor-pointer">Terms of Service / नियम व शर्तें</span>
           </div>
-        </footer>
-      )}
+        </div>
+      </footer>
+
       {/* Toast Notification */}
       {toast.message && (
-        <div className={`fixed bottom-5 right-5 z-50 p-4 rounded-xl shadow-2xl border text-sm font-semibold flex items-center gap-2 animate-fade-in ${
+        <div className={`fixed bottom-5 right-5 z-50 p-4 rounded-xl shadow-lg border text-sm font-semibold flex items-center gap-2 animate-fade-in bg-white ${
           toast.type === 'success' 
-            ? 'bg-green-500/10 border-green-500/20 text-green-400' 
-            : 'bg-red-500/10 border-red-500/20 text-red-400'
+            ? 'border-green-200 text-green-700' 
+            : 'border-red-200 text-red-700'
         }`}>
           {toast.type === 'success' ? (
-            <Check className="w-4.5 h-4.5" />
+            <Check className="w-4.5 h-4.5 text-green-600" />
           ) : (
-            <AlertTriangle className="w-4.5 h-4.5" />
+            <AlertTriangle className="w-4.5 h-4.5 text-red-600" />
           )}
           <span>{toast.message}</span>
         </div>

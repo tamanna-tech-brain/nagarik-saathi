@@ -1,209 +1,260 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, CheckCircle2, ShieldCheck, HelpCircle } from 'lucide-react';
 import { INDIAN_STATES, OCCUPATIONS } from '../utils/constants.js';
 
 export default function AuthScreen({ 
   page, setPage, t, langMode, authForm, setAuthForm, authError, 
   handleLogin, handleRegister, handleGuestLogin 
 }) {
-  if (page === 'login') {
-    return (
-      <div className="max-w-md mx-auto my-12 bg-stone-900 border border-stone-800 p-8 rounded-2xl shadow-2xl space-y-6 animate-fade-in no-print">
-        <div className="text-center space-y-2">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mx-auto shadow-lg">
-            <Sparkles className="h-6 w-6 text-white" />
+  const isLogin = page === 'login';
+
+  return (
+    <div className="max-w-5xl mx-auto my-6 bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden grid md:grid-cols-12 no-print min-h-[580px]">
+      
+      {/* Left Column: Branding Pane */}
+      <div className="md:col-span-5 bg-slate-900 text-white p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden">
+        {/* Subtle orange-green glows inside the dark pane */}
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[50%] rounded-full bg-amber-500/10 blur-[60px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[50%] rounded-full bg-emerald-500/10 blur-[60px] pointer-events-none" />
+
+        <div className="space-y-8 z-10">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center shadow-md">
+              <Sparkles className="h-5 w-5 text-slate-950" />
+            </div>
+            <div>
+              <span className="text-xl font-bold tracking-tight text-white font-display">Nagarik<span className="text-amber-400">Saathi</span></span>
+              <span className="text-[10px] block text-slate-400 font-mono tracking-widest uppercase font-semibold">Government Discovery Portal</span>
+            </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-white font-display">{t[langMode].loginTitle}</h2>
-          <p className="text-xs text-stone-400 leading-relaxed">{t[langMode].loginDesc}</p>
+
+          <div className="space-y-4">
+            <h1 className="text-3xl font-extrabold tracking-tight leading-tight">
+              AI-Powered Scheme Discovery <br />
+              <span className="text-amber-400">For Rural Communities</span>
+            </h1>
+            <p className="text-sm text-slate-300 leading-relaxed font-medium">
+              Find, screen, and apply for central and state government benefits in local Indian languages. Built to empower citizens and local VLE operators.
+            </p>
+          </div>
+
+          {/* Feature Bullets */}
+          <ul className="space-y-4 text-xs font-semibold text-slate-200 pt-2">
+            <li className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-amber-400 flex-shrink-0" />
+              <span>Smart RAG Vector Search & Embeddings</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <span>Verified Scheme Data & Dynamic Checklists</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <HelpCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+              <span>Bilingual Hindi & English Audio Support</span>
+            </li>
+          </ul>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-300 block">Username / उपयोगकर्ता नाम</label>
-            <input
-              type="text"
-              required
-              placeholder="Enter username"
-              value={authForm.username}
-              onChange={(e) => setAuthForm({...authForm, username: e.target.value})}
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-300 block">Password / पासवर्ड</label>
-            <input
-              type="password"
-              required
-              placeholder="Enter password"
-              value={authForm.password}
-              onChange={(e) => setAuthForm({...authForm, password: e.target.value})}
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          {authError && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-xs font-semibold">
-              {authError}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl text-sm font-bold shadow-lg transition-all"
-          >
-            {t[langMode].loginBtn}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleGuestLogin}
-            className="w-full py-3 bg-stone-900 border border-stone-800 text-amber-500 hover:bg-stone-850 rounded-xl text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Try Demo Mode (One-Click Guest) / अतिथि लॉगिन</span>
-          </button>
-        </form>
-
-        <div className="text-center pt-2">
-          <span className="text-xs text-stone-400">{t[langMode].needAccount} </span>
-          <button 
-            onClick={() => setPage('register')}
-            className="text-xs text-amber-500 hover:underline font-bold"
-          >
-            Register here / पंजीकरण करें
-          </button>
+        <div className="pt-8 z-10 border-t border-slate-800 text-[11px] text-slate-400 font-mono">
+          An initiative for Digital Empowerment · 🇮🇳
         </div>
       </div>
-    );
-  }
 
-  if (page === 'register') {
-    return (
-      <div className="max-w-lg mx-auto bg-stone-900 border border-stone-800 p-8 rounded-2xl shadow-2xl space-y-6 animate-fade-in no-print">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-extrabold text-white font-display">{t[langMode].registerTitle}</h2>
-          <p className="text-xs text-stone-400 leading-relaxed">{t[langMode].registerDesc}</p>
-        </div>
-
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            
-            {/* Credentials */}
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-xs font-semibold text-stone-300 block">Username / उपयोगकर्ता नाम</label>
-              <input
-                type="text"
-                required
-                placeholder="Enter desired username"
-                value={authForm.username}
-                onChange={(e) => setAuthForm({...authForm, username: e.target.value})}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
-              />
+      {/* Right Column: Interactive Form */}
+      <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-white">
+        {isLogin ? (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-extrabold text-slate-900 font-display">{t[langMode].loginTitle}</h2>
+              <p className="text-xs text-slate-500 mt-1 font-semibold">{t[langMode].loginDesc}</p>
             </div>
 
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-xs font-semibold text-stone-300 block">Password / पासवर्ड</label>
-              <input
-                type="password"
-                required
-                placeholder="Enter secure password"
-                value={authForm.password}
-                onChange={(e) => setAuthForm({...authForm, password: e.target.value})}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
-              />
-            </div>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Username / उपयोगकर्ता नाम</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter username"
+                  value={authForm.username}
+                  onChange={(e) => setAuthForm({...authForm, username: e.target.value})}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-650 focus:bg-white transition-colors"
+                />
+              </div>
 
-            {/* Profile parameter collection */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-300 block">Age / आयु (वर्ष)</label>
-              <input
-                type="number"
-                required
-                value={authForm.age}
-                onChange={(e) => setAuthForm({...authForm, age: e.target.value})}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
-              />
-            </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Password / पासवर्ड</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter password"
+                  value={authForm.password}
+                  onChange={(e) => setAuthForm({...authForm, password: e.target.value})}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-650 focus:bg-white transition-colors"
+                />
+              </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-300 block">State / राज्य</label>
-              <select
-                value={authForm.state}
-                onChange={(e) => setAuthForm({...authForm, state: e.target.value})}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
+              {authError && (
+                <div className="p-3 bg-red-50 border border-red-150 text-red-750 rounded-xl text-xs font-semibold">
+                  {authError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold shadow-sm transition-colors"
               >
-                {INDIAN_STATES.map((st, idx) => (
-                  <option key={idx} value={st}>{st}</option>
-                ))}
-              </select>
-            </div>
+                {t[langMode].loginBtn}
+              </button>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-300 block">Occupation / व्यवसाय</label>
-              <select
-                value={authForm.occupation}
-                onChange={(e) => setAuthForm({...authForm, occupation: e.target.value})}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
+              <button
+                type="button"
+                onClick={handleGuestLogin}
+                className="w-full py-3 bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200/85 rounded-xl text-sm font-bold shadow-sm transition-colors flex items-center justify-center gap-2"
               >
-                {OCCUPATIONS.map((occ, idx) => (
-                  <option key={idx} value={occ}>{occ}</option>
-                ))}
-              </select>
-            </div>
+                <Sparkles className="w-4 h-4 text-amber-600" />
+                <span>Try Demo Mode (One-Click Guest) / अतिथि लॉगिन</span>
+              </button>
+            </form>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-300 block">Gender / लिंग</label>
-              <select
-                value={authForm.gender}
-                onChange={(e) => setAuthForm({...authForm, gender: e.target.value})}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
+            <div className="pt-2 text-center">
+              <span className="text-xs text-slate-550">{t[langMode].needAccount} </span>
+              <button 
+                type="button"
+                onClick={() => setPage('register')}
+                className="text-xs text-amber-655 hover:underline font-bold"
               >
-                <option value="Male">Male / पुरुष</option>
-                <option value="Female">Female / महिला</option>
-              </select>
-            </div>
-
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-xs font-semibold text-stone-300 block">Marital Status / वैवाहिक स्थिति</label>
-              <select
-                value={authForm.maritalStatus}
-                onChange={(e) => setAuthForm({...authForm, maritalStatus: e.target.value})}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500"
-              >
-                <option value="Single">Single / एकल</option>
-                <option value="Married">Married / विवाहित</option>
-                <option value="Widowed">Widowed / विधवा</option>
-              </select>
+                Register here / पंजीकरण करें &rarr;
+              </button>
             </div>
           </div>
-
-          {authError && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-xs font-semibold">
-              {authError}
+        ) : (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-extrabold text-slate-900 font-display">{t[langMode].registerTitle}</h2>
+              <p className="text-xs text-slate-500 mt-1 font-semibold">{t[langMode].registerDesc}</p>
             </div>
-          )}
 
-          <button
-            type="submit"
-            className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-xl text-sm font-bold shadow-lg transition-all"
-          >
-            {t[langMode].registerBtn}
-          </button>
-        </form>
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                
+                {/* Credentials */}
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Username / उपयोगकर्ता नाम</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter desired username"
+                    value={authForm.username}
+                    onChange={(e) => setAuthForm({...authForm, username: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-655 focus:bg-white transition-colors"
+                  />
+                </div>
 
-        <div className="text-center pt-2">
-          <span className="text-xs text-stone-400">{t[langMode].haveAccount} </span>
-          <button 
-            onClick={() => setPage('login')}
-            className="text-xs text-amber-500 hover:underline font-bold"
-          >
-            Sign In here / लॉगिन करें
-          </button>
-        </div>
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Password / पासवर्ड</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter secure password"
+                    value={authForm.password}
+                    onChange={(e) => setAuthForm({...authForm, password: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-655 focus:bg-white transition-colors"
+                  />
+                </div>
+
+                {/* Profile parameters */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Age / आयु (वर्ष)</label>
+                  <input
+                    type="number"
+                    required
+                    value={authForm.age}
+                    onChange={(e) => setAuthForm({...authForm, age: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-655 focus:bg-white transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">State / राज्य</label>
+                  <select
+                    value={authForm.state}
+                    onChange={(e) => setAuthForm({...authForm, state: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-655 focus:bg-white transition-colors"
+                  >
+                    {INDIAN_STATES.map((st, idx) => (
+                      <option key={idx} value={st}>{st}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Occupation / व्यवसाय</label>
+                  <select
+                    value={authForm.occupation}
+                    onChange={(e) => setAuthForm({...authForm, occupation: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-655 focus:bg-white transition-colors"
+                  >
+                    {OCCUPATIONS.map((occ, idx) => (
+                      <option key={idx} value={occ}>{occ}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Gender / लिंग</label>
+                  <select
+                    value={authForm.gender}
+                    onChange={(e) => setAuthForm({...authForm, gender: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-655 focus:bg-white transition-colors"
+                  >
+                    <option value="Male">Male / पुरुष</option>
+                    <option value="Female">Female / महिला</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Marital Status / वैवाहिक स्थिति</label>
+                  <select
+                    value={authForm.maritalStatus}
+                    onChange={(e) => setAuthForm({...authForm, maritalStatus: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-655 focus:bg-white transition-colors"
+                  >
+                    <option value="Single">Single / एकल</option>
+                    <option value="Married">Married / विवाहित</option>
+                    <option value="Widowed">Widowed / विधवा</option>
+                  </select>
+                </div>
+              </div>
+
+              {authError && (
+                <div className="p-3 bg-red-50 border border-red-150 text-red-755 rounded-xl text-xs font-semibold">
+                  {authError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold shadow-sm transition-colors"
+              >
+                {t[langMode].registerBtn}
+              </button>
+            </form>
+
+            <div className="pt-2 text-center">
+              <span className="text-xs text-slate-550">{t[langMode].haveAccount} </span>
+              <button 
+                type="button"
+                onClick={() => setPage('login')}
+                className="text-xs text-amber-655 hover:underline font-bold"
+              >
+                Sign In here / लॉगिन करें &rarr;
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-    );
-  }
 
-  return null;
+    </div>
+  );
 }
