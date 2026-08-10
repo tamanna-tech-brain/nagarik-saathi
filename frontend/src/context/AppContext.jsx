@@ -7,7 +7,7 @@ export const AppProvider = ({ children }) => {
   const [langMode, setLangMode] = useState('en');
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [currentUser, setCurrentUser] = useState(null);
-  const [operatorStats, setOperatorStats] = useState({ citizensHelped: 0, avgResponseTimeMs: 0 });
+  const [operatorStats, setOperatorStats] = useState({ citizensHelped: 0, avgResponseTimeSec: null, matchRate: 'N/A', districtRank: 'N/A', categoriesMatched: [], recentActivity: [] });
   
   const API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
     ? 'http://localhost:5000/api'

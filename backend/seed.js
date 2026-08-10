@@ -486,7 +486,8 @@ const schemesData = [
       minLandAcres: 0,
       maxLandAcres: 9999,
       states: ["All"],
-      maxAnnualIncome: 450000
+      maxAnnualIncome: 450000,
+      casteCategory: ["SC", "ST"]
     },
     benefits: "Scholarship of ₹12,000 per annum for graduation (first 3 years) and ₹20,000 per annum for post-graduation to meritorious students belonging to families with income below 4.5L.",
     benefitsHindi: "4.5 लाख से कम आय वाले परिवारों के मेधावी छात्रों को स्नातक (पहले 3 वर्ष) के लिए ₹12,000 प्रति वर्ष और स्नातकोत्तर के लिए ₹20,000 प्रति वर्ष की छात्रवृत्ति।",
@@ -1267,7 +1268,7 @@ const seedDatabase = async () => {
       try {
         const { GoogleGenerativeAIEmbeddings } = await import("@langchain/google-genai");
         const embeddings = new GoogleGenerativeAIEmbeddings({
-          modelName: "embedding-001",
+          modelName: "gemini-embedding-2",
           apiKey: apiKey
         });
         

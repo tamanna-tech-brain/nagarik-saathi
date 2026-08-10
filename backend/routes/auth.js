@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Rate limiting for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // limit each IP to 200 requests per windowMs
+  max: 10, // Strong brute-force protection
   message: { error: "Too many requests from this IP, please try again after 15 minutes." }
 });
 
@@ -40,10 +40,10 @@ export const requireAuth = (req, res, next) => {
 };
 
 router.post('/register', async (req, res) => {
-  const { username, password, age, occupation, state, gender, maritalStatus } = req.body;
+  const { username, password, age, occupation, state, gender, maritalStatus, phone } = req.body;
 
-  if (!username || !password || !age || !occupation || !state || !gender || !maritalStatus) {
-    return res.status(400).json({ error: "All registration fields are required." });
+  if (!username || !password || !age || !occupation || !state || !gender || !maritalStatus || !phone) {
+    return res.status(400).json({ error: "All registration fields including phone number are required." });
   }
   
   if (password.length < 8) {
@@ -60,6 +60,8 @@ router.post('/register', async (req, res) => {
     const newUser = new User({
       username,
       password: hashedPassword,
+      phone,
+      isPhoneVerified: false,
       profile: {
         age: Number(age),
         occupation,
@@ -69,17 +71,24 @@ router.post('/register', async (req, res) => {
       }
     });
 
+    // Generate Mock OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await bcrypt.hash(otp, 10);
+    
+    newUser.otpHash = otpHash;
+    newUser.otpExpiry = new Date(Date.now() + 10 * 60000); // 10 minutes expiry
+    newUser.otpAttempts = 0;
+    newUser.otpCooldown = new Date(Date.now() + 60000); // 1 minute cooldown for resend
+
     await newUser.save();
     
-    const token = jwt.sign({ userId: newUser._id, username: newUser.username }, JWT_SECRET, { expiresIn: '24h' });
+    // MOCK SMS DELIVERY
+    console.log(`\n=== MOCK SMS PROVIDER ===\nTo: ${phone}\nMessage: Your NagarikSaathi OTP is ${otp}. It expires in 10 minutes.\n=========================\n`);
 
     res.status(201).json({
-      message: "User registered successfully",
-      token,
-      user: {
-        username: newUser.username,
-        profile: newUser.profile
-      }
+      message: "User registered. OTP sent for verification.",
+      requireOtp: true,
+      username: newUser.username
     });
   } catch (error) {
     console.error("Register Error:", error);
@@ -105,10 +114,108 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: "Invalid username or password." });
     }
 
+    // Always require OTP on every login for security — no session without OTP verification
+    if (user.otpCooldown && user.otpCooldown > new Date()) {
+      return res.status(429).json({ error: "Please wait before requesting another OTP." });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await bcrypt.hash(otp, 10);
+    user.otpHash = otpHash;
+    user.otpExpiry = new Date(Date.now() + 10 * 60000); // 10 minutes
+    user.otpAttempts = 0;
+    user.otpCooldown = new Date(Date.now() + 60000); // 1 minute resend cooldown
+    await user.save();
+
+    console.log(`\n=== MOCK SMS PROVIDER ===\nTo: ${user.phone}\nMessage: Your NagarikSaathi OTP is ${otp}. It expires in 10 minutes.\n=========================\n`);
+
+    return res.json({
+      message: "OTP sent to your registered phone number. Please verify to continue.",
+      requireOtp: true,
+      username: user.username
+    });
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ error: "Failed to log in." });
+  }
+});
+
+// OTP Request Route
+router.post('/request-otp', async (req, res) => {
+  const { username } = req.body;
+  if (!username) {
+    return res.status(400).json({ error: "Username is required." });
+  }
+
+  try {
+    const user = await User.findOne({ username });
+    // Do not reveal if user does not exist to prevent enumeration
+    if (!user) {
+      return res.json({ message: "If the user exists, an OTP has been sent." });
+    }
+
+    if (user.otpCooldown && user.otpCooldown > new Date()) {
+      return res.status(429).json({ error: "Please wait before requesting another OTP." });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await bcrypt.hash(otp, 10);
+    
+    user.otpHash = otpHash;
+    user.otpExpiry = new Date(Date.now() + 10 * 60000);
+    user.otpAttempts = 0;
+    user.otpCooldown = new Date(Date.now() + 60000); // 1 minute cooldown
+    await user.save();
+
+    console.log(`\n=== MOCK SMS PROVIDER ===\nTo: ${user.phone}\nMessage: Your NagarikSaathi OTP is ${otp}. It expires in 10 minutes.\n=========================\n`);
+    
+    res.json({ message: "If the user exists, an OTP has been sent." });
+  } catch (error) {
+    console.error("OTP Request Error:", error);
+    res.status(500).json({ error: "Failed to process OTP request." });
+  }
+});
+
+// OTP Verification Route
+router.post('/verify-otp', async (req, res) => {
+  const { username, otp } = req.body;
+  if (!username || !otp) {
+    return res.status(400).json({ error: "Username and OTP are required." });
+  }
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(400).json({ error: "Invalid OTP." }); // Vague message
+    }
+
+    if (user.otpAttempts >= 5) {
+      return res.status(429).json({ error: "Too many failed attempts. Please request a new OTP." });
+    }
+
+    if (!user.otpExpiry || user.otpExpiry < new Date()) {
+      return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+    }
+
+    const isMatch = await bcrypt.compare(otp.toString(), user.otpHash || '');
+    if (!isMatch) {
+      user.otpAttempts += 1;
+      await user.save();
+      return res.status(400).json({ error: "Invalid OTP." });
+    }
+
+    // OTP matched
+    user.isPhoneVerified = true;
+    user.otpHash = undefined;
+    user.otpExpiry = undefined;
+    user.otpAttempts = 0;
+    user.otpCooldown = undefined;
+    await user.save();
+
     const token = jwt.sign({ userId: user._id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
 
     res.json({
-      message: "Logged in successfully",
+      message: "Phone verified successfully",
       token,
       user: {
         username: user.username,
@@ -116,8 +223,8 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ error: "Failed to log in." });
+    console.error("OTP Verification Error:", error);
+    res.status(500).json({ error: "Failed to verify OTP." });
   }
 });
 

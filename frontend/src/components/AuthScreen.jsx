@@ -4,11 +4,13 @@ import { INDIAN_STATES, OCCUPATIONS } from '../utils/constants.js';
 
 export default function AuthScreen({ 
   page, setPage, t, langMode, authForm, setAuthForm, authError, 
-  handleLogin, handleRegister, handleGuestLogin 
+  handleLogin, handleRegister, handleGuestLogin,
+  showOtpModal, setShowOtpModal, otpValue, setOtpValue, handleVerifyOtp
 }) {
   const isLogin = page === 'login';
 
   return (
+    <>
     <div className="max-w-5xl mx-auto my-6 bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden grid md:grid-cols-12 no-print min-h-[580px]">
       
       {/* Left Column: Branding Pane */}
@@ -163,6 +165,19 @@ export default function AuthScreen({
                   />
                 </div>
 
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Phone Number / फोन नंबर</label>
+                  <input
+                    type="tel"
+                    required
+                    pattern="[0-9]{10}"
+                    placeholder="10-digit mobile number"
+                    value={authForm.phone}
+                    onChange={(e) => setAuthForm({...authForm, phone: e.target.value})}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-amber-655 focus:bg-white transition-colors"
+                  />
+                </div>
+
                 {/* Profile parameters */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Age / आयु (वर्ष)</label>
@@ -256,5 +271,43 @@ export default function AuthScreen({
       </div>
 
     </div>
+
+      {/* OTP Verification Modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm p-6 bg-white border border-slate-200 rounded-2xl shadow-xl space-y-4">
+            <h3 className="text-xl font-bold text-slate-900 text-center">Verify Phone / फोन सत्यापित करें</h3>
+            <p className="text-sm text-slate-500 text-center">
+              Enter the 6-digit OTP sent to your phone number. (Check server console for mock OTP)
+            </p>
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <input
+                type="text"
+                required
+                maxLength="6"
+                placeholder="000000"
+                value={otpValue}
+                onChange={(e) => setOtpValue(e.target.value)}
+                className="w-full text-center tracking-[0.5em] text-2xl font-mono bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:border-amber-655 transition-colors"
+              />
+              {authError && <div className="text-xs text-red-600 text-center font-semibold">{authError}</div>}
+              <button
+                type="submit"
+                className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold shadow-sm transition-colors"
+              >
+                Verify & Login
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowOtpModal(false)}
+                className="w-full py-2 text-slate-500 text-sm font-semibold hover:text-slate-700"
+              >
+                Cancel
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

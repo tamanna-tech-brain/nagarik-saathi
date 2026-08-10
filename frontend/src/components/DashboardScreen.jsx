@@ -20,10 +20,10 @@ export default function DashboardScreen({ setPage, operatorStats }) {
       {/* Operator Stat Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Citizens Helped", value: operatorStats.citizensHelped || 14, icon: <Users className="text-amber-600 w-5 h-5" /> },
-          { label: "Match Success Rate", value: "96.4%", icon: <Check className="text-green-600 w-5 h-5" /> },
-          { label: "Avg. Resolution Time", value: `${operatorStats.avgResponseTimeMs || 4.2}s`, icon: <RefreshCw className="text-indigo-605 w-5 h-5" /> },
-          { label: "District Rank", value: "#12", icon: <Award className="text-orange-550 w-5 h-5" /> }
+          { label: "Total Citizens Helped", value: operatorStats.citizensHelped || 0, icon: <Users className="text-amber-600 w-5 h-5" /> },
+          { label: "Match Success Rate", value: operatorStats.matchRate || "N/A", icon: <Check className="text-green-600 w-5 h-5" /> },
+          { label: "Avg. Resolution Time", value: operatorStats.avgResponseTimeSec != null ? `${operatorStats.avgResponseTimeSec}s` : 'N/A', icon: <RefreshCw className="text-indigo-605 w-5 h-5" /> },
+          { label: "District Rank", value: operatorStats.districtRank || "N/A", icon: <Award className="text-orange-550 w-5 h-5" /> }
         ].map((stat, idx) => (
           <div key={idx} className="bg-white border border-slate-200 p-5 rounded-2xl space-y-2 shadow-sm">
             <div className="flex justify-between items-center">

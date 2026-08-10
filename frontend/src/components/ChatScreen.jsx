@@ -38,7 +38,7 @@ export default function ChatScreen({
             </div>
             <div className="flex items-center gap-4">
               <span>{t[langMode].citizensHelped}: <strong className="text-slate-900 text-sm">{operatorStats.citizensHelped}</strong></span>
-              <span>{t[langMode].avgSpeed}: <strong className="text-slate-900 text-sm">{operatorStats.avgResponseTimeMs}s</strong></span>
+              <span>{t[langMode].avgSpeed}: <strong className="text-slate-900 text-sm">{operatorStats.avgResponseTimeSec != null ? `${operatorStats.avgResponseTimeSec}s` : 'N/A'}</strong></span>
             </div>
           </div>
         )}
@@ -86,10 +86,19 @@ export default function ChatScreen({
                   </div>
 
                   {msg.role === 'assistant' && msg.confidence === 'low' && (
-                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-amber-800 text-xs">
+                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-amber-800 text-xs shadow-xs">
                       <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-600" />
                       <div>
                         <strong>We're not fully certain / हम पूरी तरह से आश्वस्त नहीं हैं:</strong> Please confirm eligibility at your local CSC office or call helpline 14545.
+                      </div>
+                    </div>
+                  )}
+
+                  {msg.role === 'assistant' && msg.isMockMode && (
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-2 text-blue-800 text-xs shadow-xs">
+                      <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-600" />
+                      <div>
+                        <strong>Mock Mode / मॉक मोड:</strong> This response is from the fallback system since the Gemini API key is missing or invalid.
                       </div>
                     </div>
                   )}
@@ -182,9 +191,17 @@ export default function ChatScreen({
                     {langMode === 'hi' ? scheme.nameHindi : scheme.name}
                   </h4>
                   
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-green-55 border border-green-150 text-green-700 text-[10px] font-medium">
-                    <Check className="w-3.5 h-3.5 text-green-600" />
-                    <span>{t[langMode].verifiedBadge}: {formatDate(scheme.lastVerified)}</span>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-green-55 border border-green-150 text-green-700 text-[10px] font-medium">
+                      <Check className="w-3.5 h-3.5 text-green-600" />
+                      <span>{t[langMode].verifiedBadge}: {formatDate(scheme.lastVerified)}</span>
+                    </div>
+                    {scheme.ragScore && (
+                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+                        <span>RAG Match: {scheme.ragScore}%</span>
+                      </div>
+                    )}
                   </div>
 
                   <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">

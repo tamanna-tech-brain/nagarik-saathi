@@ -13,7 +13,8 @@ const SchemeSchema = new mongoose.Schema({
     minLandAcres: { type: Number, default: 0 },
     maxLandAcres: { type: Number, default: 9999 },
     states: [{ type: String }],
-    maxAnnualIncome: { type: Number, default: 9999999 }
+    maxAnnualIncome: { type: Number, default: 9999999 },
+    casteCategory: [{ type: String }]
   },
   benefits: { type: String, required: true },
   benefitsHindi: { type: String, required: true },
@@ -63,6 +64,12 @@ export const EligibilityProfile = mongoose.model('EligibilityProfile', Eligibili
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  phone: { type: String },
+  isPhoneVerified: { type: Boolean, default: false },
+  otpHash: { type: String },
+  otpExpiry: { type: Date },
+  otpAttempts: { type: Number, default: 0 },
+  otpCooldown: { type: Date },
   profile: {
     age: { type: Number, required: true },
     occupation: { type: String, required: true },

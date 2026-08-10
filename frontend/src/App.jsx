@@ -155,9 +155,15 @@ export default function App() {
     maritalStatus: 'Married',
     annualIncome: 50000,
     casteCategory: 'General',
-    languagePreference: 'hi'
+    languagePreference: 'hi',
+    phone: ''
   });
   const [authError, setAuthError] = useState('');
+  
+  // OTP States
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [otpUsername, setOtpUsername] = useState('');
   
   // Settings Modal State
   const [showSettings, setShowSettings] = useState(false);
@@ -234,6 +240,7 @@ export default function App() {
       const speechToText = event.results[0][0].transcript;
       setChatMessage(speechToText);
       showToast(langMode === 'hi' ? `पहचाना गया: "${speechToText}"` : `Recognized: "${speechToText}"`, "success");
+      handleSendMessage(null, speechToText);
     };
 
     recognition.start();
@@ -245,7 +252,7 @@ export default function App() {
   const [chatLoading, setChatLoading] = useState(false);
   const [chatConfidence, setChatConfidence] = useState(null);
   const [chatSources, setChatSources] = useState([]);
-  const [operatorStats, setOperatorStats] = useState({ citizensHelped: 3, avgResponseTimeMs: 4.2 });
+  const [operatorStats, setOperatorStats] = useState({ citizensHelped: 0, avgResponseTimeSec: null, matchRate: 'N/A', districtRank: 'N/A', categoriesMatched: [], recentActivity: [] });
 
   // Eligibility Screener States
   const [profile, setProfile] = useState({
@@ -328,10 +335,16 @@ export default function App() {
     setAuthError('');
     try {
       const res = await axios.post(`${API_BASE}/auth/register`, authForm);
-      localStorage.setItem('token', res.data.token);
-      setToken(res.data.token);
-      setCurrentUser(res.data.user);
-      showToast("Account created successfully!", "success");
+      if (res.data.requireOtp) {
+        setOtpUsername(res.data.username);
+        setShowOtpModal(true);
+        showToast(res.data.message, "success");
+      } else {
+        localStorage.setItem('token', res.data.token);
+        setToken(res.data.token);
+        setCurrentUser(res.data.user);
+        showToast("Account created successfully!", "success");
+      }
     } catch (err) {
       const errMsg = err.response?.data?.error || "Registration failed";
       setAuthError(errMsg);
@@ -348,12 +361,40 @@ export default function App() {
         username: authForm.username,
         password: authForm.password
       });
+      if (res.data.requireOtp) {
+        setOtpUsername(res.data.username);
+        setShowOtpModal(true);
+        showToast(res.data.message, "success");
+        return;
+      }
       localStorage.setItem('token', res.data.token);
       setToken(res.data.token);
       setCurrentUser(res.data.user);
       showToast("Signed in successfully!", "success");
     } catch (err) {
       const errMsg = err.response?.data?.error || "Invalid username or password";
+      setAuthError(errMsg);
+      showToast(errMsg, "error");
+    }
+  };
+
+  // Handle Verify OTP
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    try {
+      const res = await axios.post(`${API_BASE}/auth/verify-otp`, {
+        username: otpUsername,
+        otp: otpValue
+      });
+      localStorage.setItem('token', res.data.token);
+      setToken(res.data.token);
+      setCurrentUser(res.data.user);
+      setShowOtpModal(false);
+      setOtpValue('');
+      showToast("Phone verified and signed in!", "success");
+    } catch (err) {
+      const errMsg = err.response?.data?.error || "Invalid OTP";
       setAuthError(errMsg);
       showToast(errMsg, "error");
     }
@@ -414,14 +455,15 @@ export default function App() {
         message: textToSend,
         sessionId,
         sessionType
-      }, { headers, timeout: 25000 }); // 25 second timeout
+      }, { headers, timeout: 35000 }); // 35 second timeout — gives backend 28s LLM call room to complete
 
-      const { answer, sources, confidence } = response.data;
+      const { answer, sources, confidence, isMockMode } = response.data;
       setChatHistory(prev => [...prev, {
         role: 'assistant',
         content: answer,
         sources,
         confidence,
+        isMockMode,
         timestamp: new Date()
       }]);
       
@@ -723,6 +765,11 @@ export default function App() {
             handleLogin={handleLogin}
             handleRegister={handleRegister}
             handleGuestLogin={handleGuestLogin}
+            showOtpModal={showOtpModal}
+            setShowOtpModal={setShowOtpModal}
+            otpValue={otpValue}
+            setOtpValue={setOtpValue}
+            handleVerifyOtp={handleVerifyOtp}
           />
         )}
 
